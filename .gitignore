@@ -30,7 +30,7 @@ dist-ssr
 *.db
 *.sqlite
 *.sqlite3
-db/migrations/*.sql
+# db/migrations/*.sql  <-- intentionally tracked for deployment (Render uses db:migrate)
 # TypeScript cache
 *.tsbuildinfo
 # Build outputs

@@ -7,9 +7,16 @@ import path from "path";
 type App = Hono<{ Bindings: HttpBindings }>;
 
 export function serveStaticFiles(app: App) {
+  // After esbuild bundles api/boot.ts → dist/boot.js,
+  // import.meta.dirname = <repo-root>/dist
+  // "../dist/public" from there = <repo-root>/dist/public  ✓
   const distPath = path.resolve(import.meta.dirname, "../dist/public");
 
-  app.use("*", serveStatic({ root: "./dist/public" }));
+  // serveStatic root must be relative to process.cwd().
+  // Compute it dynamically so it works regardless of where node is invoked from.
+  const staticRoot = path.relative(process.cwd(), distPath);
+
+  app.use("*", serveStatic({ root: staticRoot }));
 
   app.notFound((c) => {
     const accept = c.req.header("accept") ?? "";

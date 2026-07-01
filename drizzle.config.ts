@@ -12,5 +12,8 @@ export default defineConfig({
   dialect: "mysql",
   dbCredentials: {
     url: connectionString,
+    // ssl: true enables SSL for cloud MySQL providers (Aiven, Railway, etc.)
+    // without requiring a CA bundle to be present on the machine.
+    ssl: {},
   },
 });

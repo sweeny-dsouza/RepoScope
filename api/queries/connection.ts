@@ -1,4 +1,5 @@
 import { drizzle } from "drizzle-orm/mysql2";
+import { createPool } from "mysql2/promise";
 import { sql } from "drizzle-orm";
 import { env } from "../lib/env";
 import * as schema from "@db/schema";
@@ -17,7 +18,7 @@ function parseDatabaseUrl(url: string) {
     }
     return {
       user: match[1],
-      password: match[2].replace(/[^*]/g, '*'),
+      password: match[2].replace(/[^*]/g, "*"),
       host: match[3],
       port: match[4],
       database: match[5],
@@ -30,7 +31,7 @@ function parseDatabaseUrl(url: string) {
 export async function checkDatabaseConnection() {
   const parsed = parseDatabaseUrl(env.databaseUrl);
 
-  if ('error' in parsed) {
+  if ("error" in parsed) {
     console.error("[Database] ❌", parsed.error);
     return { success: false, error: parsed.error };
   }
@@ -67,16 +68,26 @@ export async function checkDatabaseConnection() {
       console.error("[Database] MySQL error code:", mysqlError.code || "N/A");
       console.error("[Database] MySQL errno:", mysqlError.errno || "N/A");
       console.error("[Database] MySQL fatal:", mysqlError.fatal || "N/A");
-      console.error("[Database] MySQL errors:", mysqlError.errors ? JSON.stringify(mysqlError.errors, null, 2) : "N/A");
+      console.error(
+        "[Database] MySQL errors:",
+        mysqlError.errors
+          ? JSON.stringify(mysqlError.errors, null, 2)
+          : "N/A"
+      );
     }
 
     console.error("[Database] ================================");
     console.error("[Database] 💡 Troubleshooting:");
-    console.error("[Database] 1. Check if MySQL is running: mysqladmin ping");
-    console.error("[Database] 2. Start MySQL: brew services start mysql (Mac) or net start mysql (Windows)");
-    console.error("[Database] 3. Verify credentials in .env file");
-    console.error("[Database] 4. Create database: CREATE DATABASE reposcope;");
-    console.error("[Database] 5. Run migrations: npm run db:push");
+    console.error(
+      "[Database] 1. Ensure DATABASE_URL includes SSL param for cloud hosts:"
+    );
+    console.error(
+      "[Database]    mysql://user:pass@host:port/db?ssl-mode=REQUIRED"
+    );
+    console.error(
+      "[Database] 2. For Aiven: copy the Service URI from the Aiven console"
+    );
+    console.error("[Database] 3. Run migrations: npm run db:migrate");
     console.error("[Database] ================================");
 
     return { success: false, error };
@@ -85,7 +96,22 @@ export async function checkDatabaseConnection() {
 
 export function getDb() {
   if (!instance) {
-    instance = drizzle(env.databaseUrl, {
+    // Create an explicit pool so we can pass ssl: true for cloud MySQL
+    // providers like Aiven that require SSL connections.
+    // This is a drop-in replacement — drizzle(pool, ...) is identical to
+    // drizzle(urlString, ...) in every other way.
+    const pool = createPool({
+      uri: env.databaseUrl,
+      ssl: {
+        // Accepts the server's certificate without needing to supply
+        // a CA bundle. Works for Aiven, Railway, and any cloud MySQL.
+        rejectUnauthorized: false,
+      },
+      waitForConnections: true,
+      connectionLimit: 10,
+    });
+
+    instance = drizzle(pool, {
       mode: "planetscale",
       schema: fullSchema,
     });

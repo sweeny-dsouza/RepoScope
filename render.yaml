@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: reposcope
+    runtime: node
+    region: oregon
+    plan: free
+
+    buildCommand: npm run render:build
+    startCommand: npm run render:start
+
+    # Render injects PORT automatically; the app reads process.env.PORT
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # ── Required — set these in the Render dashboard ──────────────
+      - key: DATABASE_URL
+        sync: false          # never committed; set in dashboard
+
+      - key: APP_SECRET
+        sync: false
+
+      - key: GITHUB_CLIENT_ID
+        sync: false
+
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+
+      - key: GITHUB_CALLBACK_URL
+        sync: false          # e.g. https://reposcope.onrender.com/api/github/callback
+
+      - key: VITE_GITHUB_CLIENT_ID
+        sync: false          # same value as GITHUB_CLIENT_ID
+
+      # ── Optional ──────────────────────────────────────────────────
+      - key: OWNER_UNION_ID
+        sync: false          # GitHub numeric user ID of the admin account
+
+      - key: GITHUB_TOKEN
+        sync: false          # Personal Access Token for higher API rate limits
