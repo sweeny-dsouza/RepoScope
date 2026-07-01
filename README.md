@@ -9,7 +9,7 @@
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white)
 ![MIT License](https://img.shields.io/badge/License-MIT-green)
 
-🌐 **Live Demo:** 
+🌐 **Live Demo:** https://reposcope-7naf.onrender.com/
 
 RepoScope is an AI-powered GitHub repository analysis platform that helps developers evaluate open-source projects before contributing. Instead of manually inspecting repositories across multiple GitHub pages, RepoScope combines repository health metrics, AI-generated insights, contribution difficulty estimation, commit analytics, language statistics, and community information into a single interactive dashboard.
 ---
@@ -89,7 +89,7 @@ React + TypeScript
 ### Clone
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/RepoScope.git
+ git clone https://github.com/sweeny-dsouza/RepoScope.git
 cd RepoScope
 ```
 
